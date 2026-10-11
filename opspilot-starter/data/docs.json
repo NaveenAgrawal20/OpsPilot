@@ -1,0 +1,20 @@
+[
+  {
+    "title": "Kubernetes: Debug Running Pods",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "origin": "seed_summary_not_full_source",
+    "text": "For a pod in CrashLoopBackOff, inspect kubectl describe pod and kubectl logs --previous, restart count, container exit state, health probes and events. The repeated restarts indicate a container is failing after it starts."
+  },
+  {
+    "title": "Kubernetes: Assign Memory Resources",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "origin": "seed_summary_not_full_source",
+    "text": "An OOMKilled container may have exceeded its memory limit. Examine limits and actual memory consumption. Exit code 137 can occur with a SIGKILL and needs supporting termination evidence."
+  },
+  {
+    "title": "Kubernetes: Images",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "origin": "seed_summary_not_full_source",
+    "text": "ImagePullBackOff may mean a wrong image tag, unavailable registry, credentials issue, or image pull restriction. Use pod events to identify the exact image retrieval failure."
+  }
+]
