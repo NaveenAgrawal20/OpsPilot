@@ -168,3 +168,7 @@ Interview explanation: FastAPI is the front door, LangGraph orders chat steps, l
 - Draft 201, wrong approval 403, real MCP approval 200, sequential retry 200, listing 200: passed. A labelled local smoke-test ticket was retained in ignored SQLite storage.
 - OpenRouter connectivity: failed at environment proxy with 403. Completion command: failed with missing-key/model RuntimeError before sending an authenticated request; no model response obtained.
 - No application code change was required by the observed local checks. This milestone adds documentation and corrects the stale README verification claim; no new features were added.
+
+## OpenRouter follow-up
+
+The selected model is `nvidia/nemotron-3.5-lightning:free`. A later real GET to the OpenRouter models endpoint returned HTTP 200 and confirmed this model ID is listed. Network access is now working. The key remains absent, so an authenticated completion is still blocked. The model was saved locally and as a suggested environment value; no generated answer was obtained.
