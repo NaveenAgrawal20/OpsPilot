@@ -33,12 +33,12 @@ No new feature or authentication protocol is implemented by these records.
 
 ## ADR-004: OpenRouter HTTP and a separate real MCP service
 
-- **Status:** Implemented; authenticated OpenRouter execution remains unverified
+- **Status:** Implemented; authenticated OpenRouter execution verified
 - **Context:** Keep route handling, model calls, storage, and protocol adapters separate.
 - **Decision:** `app/llm.py` sends an HTTPS chat-completions request through `requests`. `app/mcp_client.py` uses the official MCP client to invoke the separate server over Streamable HTTP. `/chat` uses local retrieval; it does not call MCP.
 - **Alternatives:** A single process is simpler to operate, but would not demonstrate the service boundary. A2A is a future milestone and is not present.
 - **Consequences:** Two local processes and one shared database path are required for ticket approval. OpenRouter needs a real key, model ID, and network permission. HTTP/model failures currently propagate as an API 500; MCP approval failures return 503 while keeping the draft approved for retry. The MCP result is currently returned as a string, not a typed ticket response.
-- **Verification:** All six existing tests pass with MCP 2.3.0. Live ticket creation uses actual MCP. OpenRouter models discovery was attempted but the environment proxy returned 403 before contacting the service; no generated completion was obtained.
+- **Verification:** All six existing tests pass with MCP 2.3.0. Live ticket creation uses actual MCP. OpenRouter initially failed because of proxy access and missing credentials. After configuration reached the runtime, models discovery returned 200 and one real completion with `nvidia/nemotron-3.5-lightning:free` succeeded. Earlier failures are preserved in the entrypoint verification history.
 
 ## Template for the next ADR
 

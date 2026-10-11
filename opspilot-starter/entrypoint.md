@@ -172,3 +172,7 @@ Interview explanation: FastAPI is the front door, LangGraph orders chat steps, l
 ## OpenRouter follow-up
 
 The selected model is `nvidia/nemotron-3.5-lightning:free`. A later real GET to the OpenRouter models endpoint returned HTTP 200 and confirmed this model ID is listed. Network access is now working. The key remains absent, so an authenticated completion is still blocked. The model was saved locally and as a suggested environment value; no generated answer was obtained.
+
+## Authenticated OpenRouter verification
+
+After the saved key binding reached the runtime, the existing `generate_answer` function successfully sent one real chat-completions request using `nvidia/nemotron-3.5-lightning:free`. The returned answer discussed memory limits and requested actual pod evidence; it was not a retrieval preview or simulated response. Earlier missing-key and proxy failures above are historical observations and are now resolved. No credential value was logged or committed. Restart an already running API process after runtime credential changes so it receives the current environment.

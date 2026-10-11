@@ -123,5 +123,6 @@ Calling the same approval twice should not create duplicate tickets.
 - No production-grade auth, telemetry, centralized logging or deployed scaling yet.
 - Published docs must be reviewed for usage rights, accuracy and change over time.
 - Local validation on 2026-10-11 passed all 6 tests with MCP 2.3.0, plus live API
-  retrieval and MCP ticket approval/retry checks. OpenRouter completion remains
-  unverified: key/model were absent and the environment proxy rejected connectivity.
+  retrieval and MCP ticket approval/retry checks. After configuring the key and
+  network access, one real OpenRouter completion succeeded with
+  `nvidia/nemotron-3.5-lightning:free`; see the verification history in entrypoint.md.
