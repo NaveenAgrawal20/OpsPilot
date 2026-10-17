@@ -18,6 +18,11 @@ Day 5 in `PROMPTS.md` implements the real A2A protocol using the official SDK.
 
 ## Prerequisites
 
+See [entrypoint.md](entrypoint.md) for exact run commands, each file's purpose,
+request/response examples, and the latest verification record.
+[decisions.md](decisions.md) records architecture choices and an ADR template;
+[flow.md](flow.md) diagrams the existing flows and labels registration/CI/CD proposals.
+
 Python 3.11+; Internet to install packages, download docs and use OpenRouter;
 Codex CLI or Codex IDE extension. An OpenRouter key and a valid current model ID
 are needed for generated answers. Retrieval preview and ticket demo work without an LLM key.
@@ -39,7 +44,7 @@ python -m pytest -q
 **Run the API (terminal 1):**
 
 ```bash
-python -m uvicorn app.api:app --reload --port 8000
+python -m uvicorn app.api:app --reload --host 127.0.0.1 --port 8000
 ```
 
 **Run the real MCP tool server (terminal 2):**
@@ -117,5 +122,7 @@ Calling the same approval twice should not create duplicate tickets.
 - The starter is not yet fully wired to A2A; use the official A2A Python SDK on Day 5.
 - No production-grade auth, telemetry, centralized logging or deployed scaling yet.
 - Published docs must be reviewed for usage rights, accuracy and change over time.
-- Run and verify MCP API details with installed SDK version; code was syntax checked
-  but its external SDK dependencies could not be installed in the build environment.
+- Local validation on 2026-10-11 passed all 6 tests with MCP 2.3.0, plus live API
+  retrieval and MCP ticket approval/retry checks. After configuring the key and
+  network access, one real OpenRouter completion succeeded with
+  `nvidia/nemotron-3.5-lightning:free`; see the verification history in entrypoint.md.
