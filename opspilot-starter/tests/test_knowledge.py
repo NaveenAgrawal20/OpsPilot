@@ -1,7 +1,7 @@
 import json
 
 from app.knowledge import format_citations, search_docs, tokenize
-from app.workflow import explain
+from app.workflow import answer
 
 
 def test_tokens_are_case_insensitive():
@@ -39,9 +39,12 @@ def test_bm25_returns_relevant_chunk_and_rejects_irrelevant_question(tmp_path):
 def test_retrieval_preview_includes_actual_source_urls(monkeypatch):
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.delenv("OPENROUTER_MODEL", raising=False)
-    state = {"sources": [{"title": "Memory limits", "url": "https://kubernetes.io/memory"}]}
+    state = {
+        "question": "What is a memory limit?",
+        "sources": [{"title": "Memory limits", "url": "https://kubernetes.io/memory"}],
+    }
 
-    answer = explain(state)["answer"]
+    result = answer(state)["answer"]
 
-    assert "LLM not configured" in answer
-    assert "https://kubernetes.io/memory" in answer
+    assert "LLM not configured" in result
+    assert "https://kubernetes.io/memory" in result

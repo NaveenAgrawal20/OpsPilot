@@ -32,7 +32,8 @@ def chat(request: Question) -> dict:
     from .workflow import graph
     state = graph.invoke({"question": request.question})
     return {"intent": state["intent"], "answer": state["answer"],
-            "sources": [{"title": p["title"], "url": p["url"]} for p in state["sources"]]}
+            "sources": [{"title": p["title"], "url": p["url"]} for p in state["sources"]],
+            "trace_steps": state["trace_steps"]}
 
 
 @app.post("/tickets/drafts", status_code=201)

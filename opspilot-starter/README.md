@@ -77,6 +77,26 @@ cite and returns the existing no-documentation message.
 
 ## Demo commands
 
+## Day 3 workflow routing
+
+```mermaid
+flowchart LR
+    S([Question]) --> R[router: keyword intent]
+    R -->|knowledge| K[knowledge: retrieve reference sources]
+    R -->|diagnose| D[diagnose: retrieve diagnostic evidence]
+    K --> A[answer: one LLM or retrieval-preview response]
+    D --> A
+    A --> E([Answer, sources, trace_steps])
+```
+
+`router` checks a small fixed list of operational keywords. `knowledge` retrieves
+documentation for general questions. `diagnose` retrieves evidence and records
+whether it found material for a diagnosis. Both paths meet once at `answer`,
+which is the only workflow node that calls the LLM module. There is no agent
+loop: each request makes exactly one routing choice. `trace_steps` in `/chat`
+shows the nodes that ran, for example `router:diagnose`,
+`diagnose:retrieved_evidence`, and `answer:completed`.
+
 ### 1. Health
 
 ```bash

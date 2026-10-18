@@ -8,6 +8,20 @@ def test_health():
     assert response.json()["status"] == "ok"
 
 
+def test_chat_returns_routing_trace(monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.delenv("OPENROUTER_MODEL", raising=False)
+
+    response = TestClient(app).post(
+        "/chat", json={"question": "Why is my pod OOMKilled and restarting?"}
+    )
+
+    assert response.status_code == 200
+    assert response.json()["trace_steps"] == [
+        "router:diagnose", "diagnose:retrieved_evidence", "answer:completed"
+    ]
+
+
 def test_approval_fails_without_code(tmp_path, monkeypatch):
     monkeypatch.setenv("OPSPILOT_DB", str(tmp_path / "api.db"))
     monkeypatch.setenv("DEMO_APPROVAL_CODE", "secret")
