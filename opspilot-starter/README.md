@@ -2,7 +2,7 @@
 
 This is an **educational, enterprise-style project**, not a production service.
 The starter provides a small FastAPI app, a 3-step LangGraph workflow,
-lexical RAG with source URLs, local SQLite incident drafts/tickets,
+BM25 RAG with source URLs, local SQLite incident drafts/tickets,
 and an MCP v2 server/client integration. It does **not** yet provide A2A;
 Day 5 in `PROMPTS.md` implements the real A2A protocol using the official SDK.
 
@@ -48,11 +48,32 @@ python -m uvicorn app.api:app --reload --port 8000
 python -m app.mcp_server
 ```
 
-**On Day 2, download official Kubernetes docs** (replaces seed summary corpus):
+**On Day 2, cache and chunk exactly three official Kubernetes docs** (replaces the seed summary corpus):
 
 ```bash
 python scripts/ingest_docs.py
 ```
+
+Use `python scripts/ingest_docs.py --refresh` to download them again. HTML is
+cached in ignored `data/cache/`, so the normal command can run without network
+after the first successful fetch. Each saved chunk contains a title, source URL,
+UTC retrieval date, chunk ID, and text. Empty, short, or mostly non-letter
+pages are rejected and the corpus is written only after all three pages succeed.
+
+## Retrieval trade-offs
+
+BM25 is still word-based retrieval, but it ranks rare matching words and uses
+term frequency and chunk length instead of merely counting unique overlap. It
+is small enough to inspect and needs no retrieval framework or model service.
+It cannot match concepts expressed with different words, so a vector or hybrid
+retriever would be a later improvement.
+
+Chunks are 1,000 characters with a 150-character overlap. The overlap keeps a
+sentence near a chunk boundary from losing all its context. Smaller chunks can
+be more precise but omit context; larger chunks give more context but can make
+the model read unrelated material. Every non-empty retrieved answer appends
+the exact source URLs used. A question with no matching chunks has no source to
+cite and returns the existing no-documentation message.
 
 ## Demo commands
 
@@ -110,7 +131,7 @@ Calling the same approval twice should not create duplicate tickets.
 
 ## Known MVP limitations (say this in the interview)
 
-- Current retrieval is lexical token overlap, not embeddings/hybrid/vector search.
+- BM25 retrieval is word based, not embeddings/hybrid/vector search.
 - Ticket approval uses a demo code, not Entra ID or real authorization.
 - The LangGraph graph currently classifies but does not route differently by intent.
   Extend with conditional edges during Day 3.

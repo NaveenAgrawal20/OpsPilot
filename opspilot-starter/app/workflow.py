@@ -6,7 +6,7 @@ A2A delegation is intentionally a Day 5 milestone, not faked here.
 import os
 from typing import TypedDict
 from langgraph.graph import END, START, StateGraph
-from .knowledge import search_docs
+from .knowledge import format_citations, search_docs
 from .llm import generate_answer
 
 
@@ -35,8 +35,10 @@ def explain(state: AgentState) -> dict:
     if not os.getenv("OPENROUTER_API_KEY") or not os.getenv("OPENROUTER_MODEL"):
         # Offline fallback is a retrieval preview, not a simulated LLM answer.
         titles = ", ".join(source["title"] for source in sources)
-        return {"answer": f"Retrieved evidence (LLM not configured): {titles}"}
-    return {"answer": generate_answer(state["question"], sources)}
+        answer = f"Retrieved evidence (LLM not configured): {titles}"
+    else:
+        answer = generate_answer(state["question"], sources)
+    return {"answer": answer + format_citations(sources)}
 
 
 def build_graph():

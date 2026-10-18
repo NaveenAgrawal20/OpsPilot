@@ -1,20 +1,527 @@
 [
   {
-    "title": "Kubernetes: Debug Running Pods",
+    "title": "Debug Running Pods | Kubernetes",
     "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
-    "origin": "seed_summary_not_full_source",
-    "text": "For a pod in CrashLoopBackOff, inspect kubectl describe pod and kubectl logs --previous, restart count, container exit state, health probes and events. The repeated restarts indicate a container is failing after it starts."
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-1",
+    "text": "Debug Running Pods This page explains how to debug Pods running (or crashing) on a Node. Before you begin Your Pod should already be\nscheduled and running. If your Pod is not yet running, start with Debugging\nPods . For some of the advanced debugging steps you need to know on which Node the\nPod is running and have shell access to run commands on that Node. You don't\nneed that access to run the standard debug steps that use kubectl . Using kubectl describe pod to fetch details about pods For this example we'll use a Deployment to create two pods, similar to the earlier example. application/nginx-with-request.yaml apiVersion : apps/v1 kind : Deployment metadata : name : nginx-deployment spec : selector : matchLabels : app : nginx replicas : 2 template : metadata : labels : app : nginx spec : containers : - name : nginx image : nginx resources : limits : memory : \"128Mi\" cpu : \"500m\" ports : - containerPort : 80 Create deployment by running following command: kubectl apply -f https://k8s."
   },
   {
-    "title": "Kubernetes: Assign Memory Resources",
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-2",
+    "text": "es : limits : memory : \"128Mi\" cpu : \"500m\" ports : - containerPort : 80 Create deployment by running following command: kubectl apply -f https://k8s.io/examples/application/nginx-with-request.yaml deployment.apps/nginx-deployment created Check pod status by following command: kubectl get pods NAME                                READY   STATUS    RESTARTS   AGE\nnginx-deployment-67d4bdd6f5-cx2nz   1/1     Running   0          13s\nnginx-deployment-67d4bdd6f5-w6kd7   1/1     Running   0          13s We can retrieve a lot more information about each of these pods using kubectl describe pod . For example: kubectl describe pod nginx-deployment-67d4bdd6f5-w6kd7 Name:         nginx-deployment-67d4bdd6f5-w6kd7\nNamespace:    default\nPriority:     0\nNode:         kube-worker-1/192.168.0.113\nStart Time:   Thu, 17 Feb 2022 16:51:01 -0500\nLabels:       app=nginx\n              pod-template-hash=67d4bdd6f5\nAnnotations:  <none>\nStatus:       Running\nIP:           10.88.0.3\nIPs:\n  IP:           10.88.0."
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-3",
+    "text": " app=nginx\n              pod-template-hash=67d4bdd6f5\nAnnotations:  <none>\nStatus:       Running\nIP:           10.88.0.3\nIPs:\n  IP:           10.88.0.3\n  IP:           2001:db8::1\nControlled By:  ReplicaSet/nginx-deployment-67d4bdd6f5\nContainers:\n  nginx:\n    Container ID:   containerd://5403af59a2b46ee5a23fb0ae4b1e077f7ca5c5fb7af16e1ab21c00e0e616462a\n    Image:          nginx\n    Image ID:       docker.io/library/nginx@sha256:2834dc507516af02784808c5f48b7cbe38b8ed5d0f4837f16e78d00deb7e7767\n    Port:           80/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Thu, 17 Feb 2022 16:51:05 -0500\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     500m\n      memory:  128Mi\n    Requests:\n      cpu:        500m\n      memory:     128Mi\n    Environment:  <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-bgsgp (ro)\nConditions:\n  Type              Status\n  Initialized       True \n  Ready             True"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-4",
+    "text": "kubernetes.io/serviceaccount from kube-api-access-bgsgp (ro)\nConditions:\n  Type              Status\n  Initialized       True \n  Ready             True \n  ContainersReady   True \n  PodScheduled      True \nVolumes:\n  kube-api-access-bgsgp:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n    ConfigMapName:           kube-root-ca.crt\n    ConfigMapOptional:       <nil>\n    DownwardAPI:             true\nQoS Class:                   Guaranteed\nNode-Selectors:              <none>\nTolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s\n                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s\nEvents:\n  Type    Reason     Age   From               Message\n  ----    ------     ----  ----               -------\n  Normal  Scheduled  34s   default-scheduler  Successfully assigned default/nginx-deployment-67d4bdd6f5-w6kd7 to kube-worker-1\n  Normal  Pulling "
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-5",
+    "text": "----\n  Normal  Scheduled  34s   default-scheduler  Successfully assigned default/nginx-deployment-67d4bdd6f5-w6kd7 to kube-worker-1\n  Normal  Pulling    31s   kubelet            Pulling image \"nginx\"\n  Normal  Pulled     30s   kubelet            Successfully pulled image \"nginx\" in 1.146417389s\n  Normal  Created    30s   kubelet            Created container nginx\n  Normal  Started    30s   kubelet            Started container nginx Here you can see configuration information about the container(s) and Pod (labels, resource requirements, etc.), as well as status information about the container(s) and Pod (state, readiness, restart count, events, etc.). The container state is one of Waiting, Running, or Terminated. Depending on the state, additional information will be provided - here you can see that for a container in Running state, the system tells you when the container started. Ready tells you whether the container passed its last readiness probe. (In this case, the container does no"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-6",
+    "text": "stem tells you when the container started. Ready tells you whether the container passed its last readiness probe. (In this case, the container does not have a readiness probe configured; the container is assumed to be ready if no readiness probe is configured.) Restart Count tells you how many times the container has been restarted; this information can be useful for detecting crash loops in containers that are configured with a restart policy of Always . Currently the only Condition associated with a Pod is the binary Ready condition, which indicates that the pod is able to service requests and should be added to the load balancing pools of all matching services. Lastly, you see a log of recent events related to your Pod. \"From\" indicates the component that is logging the event. \"Reason\" and \"Message\" tell you what happened. Example: debugging Pending Pods A common scenario that you can detect using events is when you've created a Pod that won't fit on any node. For example, the Pod m"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-7",
+    "text": "ugging Pending Pods A common scenario that you can detect using events is when you've created a Pod that won't fit on any node. For example, the Pod might request more resources than are free on any node, or it might specify a label selector that doesn't match any nodes. Let's say we created the previous Deployment with 5 replicas (instead of 2) and requesting 600 millicores instead of 500, on a four-node cluster where each (virtual) machine has 1 CPU. In that case one of the Pods will not be able to schedule. (Note that because of the cluster addon pods such as fluentd, skydns, etc., that run on each node, if we requested 1000 millicores then none of the Pods would be able to schedule.) kubectl get pods NAME                                READY     STATUS    RESTARTS   AGE\nnginx-deployment-1006230814-6winp   1/1       Running   0          7m\nnginx-deployment-1006230814-fmgu3   1/1       Running   0          7m\nnginx-deployment-1370807587-6ekbw   1/1       Running   0          1m\nnginx"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-8",
+    "text": "  7m\nnginx-deployment-1006230814-fmgu3   1/1       Running   0          7m\nnginx-deployment-1370807587-6ekbw   1/1       Running   0          1m\nnginx-deployment-1370807587-fg172   0/1       Pending   0          1m\nnginx-deployment-1370807587-fz9sd   0/1       Pending   0          1m To find out why the nginx-deployment-1370807587-fz9sd pod is not running, we can use kubectl describe pod on the pending Pod and look at its events: kubectl describe pod nginx-deployment-1370807587-fz9sd Name:\t\tnginx-deployment-1370807587-fz9sd\n  Namespace:\tdefault\n  Node:\t\t/\n  Labels:\t\tapp=nginx,pod-template-hash=1370807587\n  Status:\t\tPending\n  IP:\n  Controllers:\tReplicaSet/nginx-deployment-1370807587\n  Containers:\n    nginx:\n      Image:\tnginx\n      Port:\t80/TCP\n      QoS Tier:\n        memory:\tGuaranteed\n        cpu:\tGuaranteed\n      Limits:\n        cpu:\t1\n        memory:\t128Mi\n      Requests:\n        cpu:\t1\n        memory:\t128Mi\n      Environment Variables:\n  Volumes:\n    default-token-4bcbi:\n      Type"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-9",
+    "text": "        memory:\t128Mi\n      Requests:\n        cpu:\t1\n        memory:\t128Mi\n      Environment Variables:\n  Volumes:\n    default-token-4bcbi:\n      Type:\tSecret (a volume populated by a Secret)\n      SecretName:\tdefault-token-4bcbi\n  Events:\n    FirstSeen\tLastSeen\tCount\tFrom\t\t\t        SubobjectPath\tType\t\tReason\t\t\t    Message\n    ---------\t--------\t-----\t----\t\t\t        -------------\t--------\t------\t\t\t    -------\n    1m\t\t    48s\t\t    7\t    {default-scheduler }\t\t\t        Warning\t\tFailedScheduling\tpod (nginx-deployment-1370807587-fz9sd) failed to fit in any node\n  fit failure on node (kubernetes-node-6ta5): Node didn't have enough resource: CPU, requested: 1000, used: 1420, capacity: 2000\n  fit failure on node (kubernetes-node-wul5): Node didn't have enough resource: CPU, requested: 1000, used: 1100, capacity: 2000 Here you can see the event generated by the scheduler saying that the Pod failed to schedule for reason FailedScheduling (and possibly others). The message tells us that there wer"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-10",
+    "text": "nerated by the scheduler saying that the Pod failed to schedule for reason FailedScheduling (and possibly others). The message tells us that there were not enough resources for the Pod on any of the nodes. To correct this situation, you can use kubectl scale to update your Deployment to specify four or fewer replicas. (Or you could leave the one Pod pending, which is harmless.) Events such as the ones you saw at the end of kubectl describe pod are persisted in etcd and provide high-level information on what is happening in the cluster. To list all events you can use kubectl get events but you have to remember that events are namespaced. This means that if you're interested in events for some namespaced object (e.g. what happened with Pods in namespace my-namespace ) you need to explicitly provide a namespace to the command: kubectl get events --namespace = my-namespace To see events from all namespaces, you can use the --all-namespaces argument. In addition to kubectl describe pod , an"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-11",
+    "text": "ents --namespace = my-namespace To see events from all namespaces, you can use the --all-namespaces argument. In addition to kubectl describe pod , another way to get extra information about a pod (beyond what is provided by kubectl get pod ) is to pass the -o yaml output format flag to kubectl get pod . This will give you, in YAML format, even more information than kubectl describe pod - essentially all of the information the system has about the Pod. Here you will see things like annotations (which are key-value metadata without the label restrictions, that is used internally by Kubernetes system components), restart policy, ports, and volumes. kubectl get pod nginx-deployment-1006230814-6winp -o yaml apiVersion : v1 kind : Pod metadata : creationTimestamp : \"2022-02-17T21:51:01Z\" generateName : nginx-deployment-67d4bdd6f5- labels : app : nginx pod-template-hash : 67d4bdd6f5 name : nginx-deployment-67d4bdd6f5-w6kd7 namespace : default ownerReferences : - apiVersion : apps/v1 blockOwn"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-12",
+    "text": " : nginx pod-template-hash : 67d4bdd6f5 name : nginx-deployment-67d4bdd6f5-w6kd7 namespace : default ownerReferences : - apiVersion : apps/v1 blockOwnerDeletion : true controller : true kind : ReplicaSet name : nginx-deployment-67d4bdd6f5 uid : 7d41dfd4-84c0-4be4-88ab-cedbe626ad82 resourceVersion : \"1364\" uid : a6501da1-0447-4262-98eb-c03d4002222e spec : containers : - image : nginx imagePullPolicy : Always name : nginx ports : - containerPort : 80 protocol : TCP resources : limits : cpu : 500m memory : 128Mi requests : cpu : 500m memory : 128Mi terminationMessagePath : /dev/termination-log terminationMessagePolicy : File volumeMounts : - mountPath : /var/run/secrets/kubernetes.io/serviceaccount name : kube-api-access-bgsgp readOnly : true dnsPolicy : ClusterFirst enableServiceLinks : true nodeName : kube-worker-1 preemptionPolicy : PreemptLowerPriority priority : 0 restartPolicy : Always schedulerName : default-scheduler securityContext : {} serviceAccount : default serviceAccountName"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-13",
+    "text": "ptLowerPriority priority : 0 restartPolicy : Always schedulerName : default-scheduler securityContext : {} serviceAccount : default serviceAccountName : default terminationGracePeriodSeconds : 30 tolerations : - effect : NoExecute key : node.kubernetes.io/not-ready operator : Exists tolerationSeconds : 300 - effect : NoExecute key : node.kubernetes.io/unreachable operator : Exists tolerationSeconds : 300 volumes : - name : kube-api-access-bgsgp projected : defaultMode : 420 sources : - serviceAccountToken : expirationSeconds : 3607 path : token - configMap : items : - key : ca.crt path : ca.crt name : kube-root-ca.crt - downwardAPI : items : - fieldRef : apiVersion : v1 fieldPath : metadata.namespace path : namespace status : conditions : - lastProbeTime : null lastTransitionTime : \"2022-02-17T21:51:01Z\" status : \"True\" type : Initialized - lastProbeTime : null lastTransitionTime : \"2022-02-17T21:51:06Z\" status : \"True\" type : Ready - lastProbeTime : null lastTransitionTime : \"2022-02-"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-14",
+    "text": " - lastProbeTime : null lastTransitionTime : \"2022-02-17T21:51:06Z\" status : \"True\" type : Ready - lastProbeTime : null lastTransitionTime : \"2022-02-17T21:51:06Z\" status : \"True\" type : ContainersReady - lastProbeTime : null lastTransitionTime : \"2022-02-17T21:51:01Z\" status : \"True\" type : PodScheduled containerStatuses : - containerID : containerd://5403af59a2b46ee5a23fb0ae4b1e077f7ca5c5fb7af16e1ab21c00e0e616462a image : docker.io/library/nginx:latest imageID : docker.io/library/nginx@sha256:2834dc507516af02784808c5f48b7cbe38b8ed5d0f4837f16e78d00deb7e7767 lastState : {} name : nginx ready : true restartCount : 0 started : true state : running : startedAt : \"2022-02-17T21:51:05Z\" hostIP : 192.168.0.113 phase : Running podIP : 10.88.0.3 podIPs : - ip : 10.88.0.3 - ip : 2001 : db8::1 qosClass : Guaranteed startTime : \"2022-02-17T21:51:01Z\" Examining pod logs First, look at the logs of the affected container: kubectl logs ${ POD_NAME } -c ${ CONTAINER_NAME } If your container has previo"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-15",
+    "text": "\" Examining pod logs First, look at the logs of the affected container: kubectl logs ${ POD_NAME } -c ${ CONTAINER_NAME } If your container has previously crashed, you can access the previous container's crash log with: kubectl logs ${ POD_NAME } -c ${ CONTAINER_NAME } --previous Debugging with container exec If the container image includes\ndebugging utilities, as is the case with images built from Linux and Windows OS\nbase images, you can run commands inside a specific container with kubectl exec : kubectl exec ${ POD_NAME } -c ${ CONTAINER_NAME } -- ${ CMD } ${ ARG1 } ${ ARG2 } ... ${ ARGN } Note: -c ${CONTAINER_NAME} is optional. You can omit it for Pods that only contain a single container. As an example, to look at the logs from a running Cassandra pod, you might run kubectl exec cassandra -- cat /var/log/cassandra/system.log You can run a shell that's connected to your terminal using the -i and -t arguments to kubectl exec , for example: kubectl exec -it cassandra -- sh For more "
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-16",
+    "text": " run a shell that's connected to your terminal using the -i and -t arguments to kubectl exec , for example: kubectl exec -it cassandra -- sh For more details, see Get a Shell to a Running Container . Debugging with an ephemeral debug container Feature state: Stable since Kubernetes v1.25 Ephemeral containers are useful for interactive troubleshooting when kubectl exec is insufficient\nbecause a container has crashed or a container image doesn't include debugging\nutilities, such as with distroless images . Example debugging using ephemeral containers You can use the kubectl debug command to add ephemeral containers to a\nrunning Pod. First, create a pod for the example: kubectl run ephemeral-demo --image = registry.k8s.io/pause:3.1 --restart = Never The examples in this section use the pause container image because it does not\ncontain debugging utilities, but this method works with all container\nimages. If you attempt to use kubectl exec to create a shell you will see an error\nbecause the"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-17",
+    "text": "ing utilities, but this method works with all container\nimages. If you attempt to use kubectl exec to create a shell you will see an error\nbecause there is no shell in this container image. kubectl exec -it ephemeral-demo -- sh OCI runtime exec failed: exec failed: container_linux.go:346: starting container process caused \"exec: \\\"sh\\\": executable file not found in $PATH\": unknown You can instead add a debugging container using kubectl debug . If you\nspecify the -i / --interactive argument, kubectl will automatically attach\nto the console of the Ephemeral Container. kubectl debug -it ephemeral-demo --image = busybox:1.28 --target = ephemeral-demo Defaulting debug container name to debugger-8xzrl.\nIf you don't see a command prompt, try pressing enter.\n/ # This command adds a new busybox container and attaches to it. The --target parameter targets the process namespace of another container. It's necessary\nhere because kubectl run does not enable process namespace sharing in the pod it\ncr"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-18",
+    "text": "targets the process namespace of another container. It's necessary\nhere because kubectl run does not enable process namespace sharing in the pod it\ncreates. Note: The --target parameter must be supported by the Container Runtime . When not supported,\nthe Ephemeral Container may not be started, or it may be started with an\nisolated process namespace so that ps does not reveal processes in other\ncontainers. You can view the state of the newly created ephemeral container using kubectl describe : kubectl describe pod ephemeral-demo ...\nEphemeral Containers:\n  debugger-8xzrl:\n    Container ID:   docker://b888f9adfd15bd5739fefaa39e1df4dd3c617b9902082b1cfdc29c4028ffb2eb\n    Image:          busybox\n    Image ID:       docker-pullable://busybox@sha256:1828edd60c5efd34b2bf5dd3282ec0cc04d47b2ff9caa0b6d4f07a21d1c08084\n    Port:           <none>\n    Host Port:      <none>\n    State:          Running\n      Started:      Wed, 12 Feb 2020 14:25:42 +0100\n    Ready:          False\n    Restart Count:  0\n"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-19",
+    "text": "ost Port:      <none>\n    State:          Running\n      Started:      Wed, 12 Feb 2020 14:25:42 +0100\n    Ready:          False\n    Restart Count:  0\n    Environment:    <none>\n    Mounts:         <none>\n... Use kubectl delete to remove the Pod when you're finished: kubectl delete pod ephemeral-demo Debugging using a copy of the Pod Sometimes Pod configuration options make it difficult to troubleshoot in certain\nsituations. For example, you can't run kubectl exec to troubleshoot your\ncontainer if your container image does not include a shell or if your application\ncrashes on startup. In these situations you can use kubectl debug to create a\ncopy of the Pod with configuration values changed to aid debugging. Copying a Pod while adding a new container Adding a new container can be useful when your application is running but not\nbehaving as you expect and you'd like to add additional troubleshooting\nutilities to the Pod. For example, maybe your application's container images are built on "
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-20",
+    "text": "you expect and you'd like to add additional troubleshooting\nutilities to the Pod. For example, maybe your application's container images are built on busybox but you need debugging utilities not included in busybox . You can simulate\nthis scenario using kubectl run : kubectl run myapp --image = busybox:1.28 --restart = Never -- sleep 1d Run this command to create a copy of myapp named myapp-debug that adds a\nnew Ubuntu container for debugging: kubectl debug myapp -it --image = ubuntu --share-processes --copy-to = myapp-debug Defaulting debug container name to debugger-w7xmf.\nIf you don't see a command prompt, try pressing enter.\nroot@myapp-debug:/# Note: kubectl debug automatically generates a container name if you don't choose\none using the --container flag. The -i flag causes kubectl debug to attach to the new container by\ndefault. You can prevent this by specifying --attach=false . If your session\nbecomes disconnected you can reattach using kubectl attach . The --share-processes all"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-21",
+    "text": "can prevent this by specifying --attach=false . If your session\nbecomes disconnected you can reattach using kubectl attach . The --share-processes allows the containers in this Pod to see processes\nfrom the other containers in the Pod. For more information about how this\nworks, see Share Process Namespace between Containers in a Pod . Don't forget to clean up the debugging Pod when you're finished with it: kubectl delete pod myapp myapp-debug Copying a Pod while changing its command Sometimes it's useful to change the command for a container, for example to\nadd a debugging flag or because the application is crashing. To simulate a crashing application, use kubectl run to create a container\nthat immediately exits: kubectl run --image=busybox:1.28 myapp -- false You can see using kubectl describe pod myapp that this container is crashing: Containers:\n  myapp:\n    Image:         busybox\n    ...\n    Args:\n      false\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-22",
+    "text": "ontainers:\n  myapp:\n    Image:         busybox\n    ...\n    Args:\n      false\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       Error\n      Exit Code:    1 You can use kubectl debug to create a copy of this Pod with the command\nchanged to an interactive shell: kubectl debug myapp -it --copy-to=myapp-debug --container=myapp -- sh If you don't see a command prompt, try pressing enter.\n/ # Now you have an interactive shell that you can use to perform tasks like\nchecking filesystem paths or running the container command manually. Note: To change the command of a specific container you must\nspecify its name using --container or kubectl debug will instead\ncreate a new container to run the command you specified. The -i flag causes kubectl debug to attach to the container by default.\nYou can prevent this by specifying --attach=false . If your session becomes\ndisconnected you can reattach using kubectl attach . Don't forget to cle"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-23",
+    "text": ".\nYou can prevent this by specifying --attach=false . If your session becomes\ndisconnected you can reattach using kubectl attach . Don't forget to clean up the debugging Pod when you're finished with it: kubectl delete pod myapp myapp-debug Copying a Pod while changing container images In some situations you may want to change a misbehaving Pod from its normal\nproduction container images to an image containing a debugging build or\nadditional utilities. As an example, create a Pod using kubectl run : kubectl run myapp --image=busybox:1.28 --restart=Never -- sleep 1d Now use kubectl debug to make a copy and change its container image\nto ubuntu : kubectl debug myapp --copy-to=myapp-debug --set-image=*=ubuntu The syntax of --set-image uses the same container_name=image syntax as kubectl set image . *=ubuntu means change the image of all containers\nto ubuntu . Don't forget to clean up the debugging Pod when you're finished with it: kubectl delete pod myapp myapp-debug Debugging via a shell "
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-24",
+    "text": "iners\nto ubuntu . Don't forget to clean up the debugging Pod when you're finished with it: kubectl delete pod myapp myapp-debug Debugging via a shell on the node If none of these approaches work, you can find the Node on which the Pod is\nrunning and create a Pod running on the Node. To create\nan interactive shell on a Node using kubectl debug , run: kubectl debug node/mynode -it --image = ubuntu Creating debugging pod node-debugger-mynode-pdx84 with container debugger on node mynode.\nIf you don't see a command prompt, try pressing enter.\nroot@ek8s:/# When creating a debugging session on a node, keep in mind that: kubectl debug automatically generates the name of the new Pod based on\nthe name of the Node. The root filesystem of the Node will be mounted at /host . The container runs in the host IPC, Network, and PID namespaces, although\nthe pod isn't privileged, so reading some process information may fail,\nand chroot /host may fail. If you need a privileged pod, create it manually or us"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-25",
+    "text": " pod isn't privileged, so reading some process information may fail,\nand chroot /host may fail. If you need a privileged pod, create it manually or use the --profile=sysadmin flag. Don't forget to clean up the debugging Pod when you're finished with it: kubectl delete pod node-debugger-mynode-pdx84 Capturing and analyzing Node/Pod traffic When debugging networking issues, capturing and analyzing network traffic from Nodes/Pods can provide valuable insights\ninto connectivity problems, DNS resolution failures, or unexpected network behavior. You can use kubectl debug with the --profile=sysadmin flag to run network capture tools on a node.\nFirst, create a debugging session on the node where your Pod is running: kubectl debug --profile = sysadmin node/ ${ NODE_NAME } -it --image = ubuntu:latest Once inside the debug container, install tcpdump and capture traffic on the node's network interfaces: apt-get update && apt-get install -y tcpdump tcpdump -i any -n Note: Don't forget to clean up t"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-26",
+    "text": " and capture traffic on the node's network interfaces: apt-get update && apt-get install -y tcpdump tcpdump -i any -n Note: Don't forget to clean up the debugging Pod when you're finished with it: kubectl delete pod node-debugger-mynode-pdx84 You can also capture traffic from a specific Pod: kubectl debug --profile = sysadmin pod/ ${ POD_NAME } -n ${ NAMESPACE } -it --image = ubuntu:latest And then perform the same tcpdump command inside the debug container to capture traffic from the Pod's network namespace. Debugging a Pod or Node while applying a profile When using kubectl debug to debug a node via a debugging Pod, a Pod via an ephemeral container,\nor a copied Pod, you can apply a profile to them.\nBy applying a profile, specific properties such as securityContext are set, allowing for adaptation to various scenarios.\nThere are two types of profiles, static profile and custom profile. Applying a Static Profile A static profile is a set of predefined properties, and you can apply them"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-27",
+    "text": "s of profiles, static profile and custom profile. Applying a Static Profile A static profile is a set of predefined properties, and you can apply them using the --profile flag.\nThe available profiles are as follows: Profile Description legacy A set of properties backwards compatibility with 1.22 behavior general A reasonable set of generic properties for each debugging journey baseline A set of properties compatible with PodSecurityStandard baseline policy restricted A set of properties compatible with PodSecurityStandard restricted policy netadmin A set of properties including Network Administrator privileges sysadmin A set of properties including System Administrator (root) privileges Note: If you don't specify --profile , the legacy profile is used by default, but it is planned to be deprecated in the near future.\nSo it is recommended to use other profiles such as general . Assume that you create a Pod and debug it.\nFirst, create a Pod named myapp as an example: kubectl run myapp --"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-28",
+    "text": "to use other profiles such as general . Assume that you create a Pod and debug it.\nFirst, create a Pod named myapp as an example: kubectl run myapp --image = busybox:1.28 --restart = Never -- sleep 1d Then, debug the Pod using an ephemeral container.\nIf the ephemeral container needs to have privilege, you can use the sysadmin profile: kubectl debug -it myapp --image = busybox:1.28 --target = myapp --profile = sysadmin Targeting container \"myapp\". If you don't see processes from this container it may be because the container runtime doesn't support this feature.\nDefaulting debug container name to debugger-6kg4x.\nIf you don't see a command prompt, try pressing enter.\n/ # Check the capabilities of the ephemeral container process by running the following command inside the container: / # grep Cap /proc/$$/status ...\nCapPrm:\t000001ffffffffff\nCapEff:\t000001ffffffffff\n... This means the container process is granted full capabilities as a privileged container by applying sysadmin profile.\nSee "
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-29",
+    "text": "apEff:\t000001ffffffffff\n... This means the container process is granted full capabilities as a privileged container by applying sysadmin profile.\nSee more details about capabilities . You can also check that the ephemeral container was created as a privileged container: kubectl get pod myapp -o jsonpath = '{.spec.ephemeralContainers[0].securityContext}' {\"privileged\":true} Clean up the Pod when you're finished with it: kubectl delete pod myapp Applying Custom Profile Feature state: Stable since Kubernetes v1.32 You can define a partial container spec for debugging as a custom profile in either YAML or JSON format,\nand apply it using the --custom flag. Note: Custom profile only supports the modification of the container spec,\nbut modifications to name , image , command , lifecycle and volumeDevices fields of the container spec\nare not allowed.\nIt does not support the modification of the Pod spec. Create a Pod named myapp as an example: kubectl run myapp --image = busybox:1.28 --restart "
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-30",
+    "text": "wed.\nIt does not support the modification of the Pod spec. Create a Pod named myapp as an example: kubectl run myapp --image = busybox:1.28 --restart = Never -- sleep 1d Create a custom profile in YAML or JSON format.\nHere, create a YAML format file named custom-profile.yaml : env : - name : ENV_VAR_1 value : value_1 - name : ENV_VAR_2 value : value_2 securityContext : capabilities : add : - NET_ADMIN - SYS_TIME Run this command to debug the Pod using an ephemeral container with the custom profile: kubectl debug -it myapp --image = busybox:1.28 --target = myapp --profile = general --custom = custom-profile.yaml You can check that the ephemeral container has been added to the target Pod with the custom profile applied: kubectl get pod myapp -o jsonpath = '{.spec.ephemeralContainers[0].env}' [{\"name\":\"ENV_VAR_1\",\"value\":\"value_1\"},{\"name\":\"ENV_VAR_2\",\"value\":\"value_2\"}] kubectl get pod myapp -o jsonpath = '{.spec.ephemeralContainers[0].securityContext}' {\"capabilities\":{\"add\":[\"NET_ADMIN"
+  },
+  {
+    "title": "Debug Running Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-1-chunk-31",
+    "text": "ENV_VAR_2\",\"value\":\"value_2\"}] kubectl get pod myapp -o jsonpath = '{.spec.ephemeralContainers[0].securityContext}' {\"capabilities\":{\"add\":[\"NET_ADMIN\",\"SYS_TIME\"]}} Clean up the Pod when you're finished with it: kubectl delete pod myapp Feedback Was this page helpful? Yes No Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on Stack Overflow .\nOpen an issue in the GitHub Repository if you want to report a problem or suggest an improvement . Last modified February 03, 2026 at 8:40 PM PST: docs: Add section on capturing Pod network traffic (c54259c5ae)"
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
     "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
-    "origin": "seed_summary_not_full_source",
-    "text": "An OOMKilled container may have exceeded its memory limit. Examine limits and actual memory consumption. Exit code 137 can occur with a SIGKILL and needs supporting termination evidence."
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-1",
+    "text": "Assign Memory Resources to Containers and Pods This page shows how to assign a memory request and a memory limit to a\nContainer. A Container is guaranteed to have as much memory as it requests,\nbut is not allowed to use more memory than its limit. Before you begin You need to have a Kubernetes cluster, and the kubectl command-line tool must\nbe configured to communicate with your cluster. It is recommended to run this tutorial on a cluster with at least two nodes that are not acting as control plane hosts. If you do not already have a\ncluster, you can create one by using minikube or you can use one of these Kubernetes playgrounds: iximiuz Labs Killercoda KodeKloud To check the version, enter kubectl version . Each node in your cluster must have at least 300 MiB of memory. A few of the steps on this page require you to run the metrics-server service in your cluster. If you have the metrics-server\nrunning, you can skip those steps. If you are running Minikube, run the following command to"
   },
   {
-    "title": "Kubernetes: Images",
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-2",
+    "text": "r service in your cluster. If you have the metrics-server\nrunning, you can skip those steps. If you are running Minikube, run the following command to enable the\nmetrics-server: minikube addons enable metrics-server To see whether the metrics-server is running, or another provider of the resource metrics\nAPI ( metrics.k8s.io ), run the following command: kubectl get apiservices If the resource metrics API is available, the output includes a\nreference to metrics.k8s.io . NAME v1beta1.metrics.k8s.io Create a namespace Create a namespace so that the resources you create in this exercise are\nisolated from the rest of your cluster. kubectl create namespace mem-example Specify a memory request and a memory limit To specify a memory request for a container, include the resources.requests.memory field\nin the container’s resource manifest. To specify a memory limit, include resources.limits.memory . In this exercise, you create a Pod that has one Container. The Container has a memory\nrequest of"
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-3",
+    "text": "ify a memory limit, include resources.limits.memory . In this exercise, you create a Pod that has one Container. The Container has a memory\nrequest of 100 MiB and a memory limit of 200 MiB. Here's the configuration file\nfor the Pod: pods/resource/memory-request-limit.yaml apiVersion : v1 kind : Pod metadata : name : memory-demo namespace : mem-example spec : containers : - name : memory-demo-ctr image : polinux/stress resources : requests : memory : \"100Mi\" limits : memory : \"200Mi\" command : [ \"stress\" ] args : [ \"--vm\" , \"1\" , \"--vm-bytes\" , \"150M\" , \"--vm-hang\" , \"1\" ] The args section in the configuration file provides arguments for the Container when it starts.\nThe \"--vm-bytes\", \"150M\" arguments tell the Container to attempt to allocate 150 MiB of memory. Create the Pod: kubectl apply -f https://k8s.io/examples/pods/resource/memory-request-limit.yaml --namespace = mem-example Verify that the Pod Container is running: kubectl get pod memory-demo --namespace = mem-example View detai"
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-4",
+    "text": "equest-limit.yaml --namespace = mem-example Verify that the Pod Container is running: kubectl get pod memory-demo --namespace = mem-example View detailed information about the Pod: kubectl get pod memory-demo --output = yaml --namespace = mem-example The output shows that the one Container in the Pod has a memory request of 100 MiB\nand a memory limit of 200 MiB. ... resources : requests : memory : 100Mi limits : memory : 200Mi ... Run kubectl top to fetch the metrics for the pod: kubectl top pod memory-demo --namespace = mem-example The output shows that the Pod is using about 162,900,000 bytes of memory, which\nis about 150 MiB. This is greater than the Pod's 100 MiB request, but within the\nPod's 200 MiB limit. NAME                        CPU(cores)   MEMORY(bytes)\nmemory-demo                 <something>  162856960 Delete your Pod: kubectl delete pod memory-demo --namespace = mem-example Exceed a Container's memory limit A Container can exceed its memory request if the Node has memory "
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-5",
+    "text": "l delete pod memory-demo --namespace = mem-example Exceed a Container's memory limit A Container can exceed its memory request if the Node has memory available. But a Container\nis not allowed to use more than its memory limit. If a Container allocates more memory than\nits limit, the Container becomes a candidate for termination. If the Container continues to\nconsume memory beyond its limit, the Container is terminated. If a terminated Container can be\nrestarted, the kubelet restarts it, as with any other type of runtime failure. In this exercise, you create a Pod that attempts to allocate more memory than its limit.\nHere is the configuration file for a Pod that has one Container with a\nmemory request of 50 MiB and a memory limit of 100 MiB: pods/resource/memory-request-limit-2.yaml apiVersion : v1 kind : Pod metadata : name : memory-demo-2 namespace : mem-example spec : containers : - name : memory-demo-2-ctr image : polinux/stress resources : requests : memory : \"50Mi\" limits : memory"
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-6",
+    "text": "2 namespace : mem-example spec : containers : - name : memory-demo-2-ctr image : polinux/stress resources : requests : memory : \"50Mi\" limits : memory : \"100Mi\" command : [ \"stress\" ] args : [ \"--vm\" , \"1\" , \"--vm-bytes\" , \"250M\" , \"--vm-hang\" , \"1\" ] In the args section of the configuration file, you can see that the Container\nwill attempt to allocate 250 MiB of memory, which is well above the 100 MiB limit. Create the Pod: kubectl apply -f https://k8s.io/examples/pods/resource/memory-request-limit-2.yaml --namespace = mem-example View detailed information about the Pod: kubectl get pod memory-demo-2 --namespace = mem-example At this point, the Container might be running or killed. Repeat the preceding command until the Container is killed: NAME            READY     STATUS      RESTARTS   AGE memory-demo-2   0/1       OOMKilled 1 24s Get a more detailed view of the Container status: kubectl get pod memory-demo-2 --output = yaml --namespace = mem-example The output shows that the Conta"
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-7",
+    "text": " a more detailed view of the Container status: kubectl get pod memory-demo-2 --output = yaml --namespace = mem-example The output shows that the Container was killed because it is out of memory (OOM): lastState : terminated : containerID : 65183c1877aaec2e8427bc95609cc52677a454b56fcb24340dbd22917c23b10f exitCode : 137 finishedAt : 2017-06-20T20:52:19Z reason : OOMKilled startedAt : null The Container in this exercise can be restarted, so the kubelet restarts it. Repeat\nthis command several times to see that the Container is repeatedly killed and restarted: kubectl get pod memory-demo-2 --namespace = mem-example The output shows that the Container is killed, restarted, killed again, restarted again, and so on: kubectl get pod memory-demo-2 --namespace=mem-example\nNAME            READY     STATUS      RESTARTS   AGE\nmemory-demo-2   0/1       OOMKilled   1          37s kubectl get pod memory-demo-2 --namespace=mem-example\nNAME            READY     STATUS    RESTARTS   AGE\nmemory-demo-2   "
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-8",
+    "text": "  OOMKilled   1          37s kubectl get pod memory-demo-2 --namespace=mem-example\nNAME            READY     STATUS    RESTARTS   AGE\nmemory-demo-2   1/1       Running   2          40s View detailed information about the Pod history: kubectl describe pod memory-demo-2 --namespace=mem-example The output shows that the Container starts and fails repeatedly: ... Normal  Created   Created container with id 66a3a20aa7980e61be4922780bf9d24d1a1d8b7395c09861225b0eba1b1f8511\n... Warning BackOff   Back-off restarting failed container View detailed information about your cluster's Nodes: kubectl describe nodes The output includes a record of the Container being killed because of an out-of-memory condition: Warning OOMKilling Memory cgroup out of memory: Kill process 4481 (stress) score 1994 or sacrifice child Delete your Pod: kubectl delete pod memory-demo-2 --namespace = mem-example Specify a memory request that is too big for your Nodes Memory requests and limits are associated with Containers,"
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-9",
+    "text": "ry-demo-2 --namespace = mem-example Specify a memory request that is too big for your Nodes Memory requests and limits are associated with Containers, but it is useful to think\nof a Pod as having a memory request and limit. The memory request for the Pod is the\nsum of the memory requests for all the Containers in the Pod. Likewise, the memory\nlimit for the Pod is the sum of the limits of all the Containers in the Pod. Pod scheduling is based on requests. A Pod is scheduled to run on a Node only if the Node\nhas enough available memory to satisfy the Pod's memory request. In this exercise, you create a Pod that has a memory request so big that it exceeds the\ncapacity of any Node in your cluster. Here is the configuration file for a Pod that has one\nContainer with a request for 1000 GiB of memory, which likely exceeds the capacity\nof any Node in your cluster. pods/resource/memory-request-limit-3.yaml apiVersion : v1 kind : Pod metadata : name : memory-demo-3 namespace : mem-example spec :"
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-10",
+    "text": "e in your cluster. pods/resource/memory-request-limit-3.yaml apiVersion : v1 kind : Pod metadata : name : memory-demo-3 namespace : mem-example spec : containers : - name : memory-demo-3-ctr image : polinux/stress resources : requests : memory : \"1000Gi\" limits : memory : \"1000Gi\" command : [ \"stress\" ] args : [ \"--vm\" , \"1\" , \"--vm-bytes\" , \"150M\" , \"--vm-hang\" , \"1\" ] Create the Pod: kubectl apply -f https://k8s.io/examples/pods/resource/memory-request-limit-3.yaml --namespace = mem-example View the Pod status: kubectl get pod memory-demo-3 --namespace = mem-example The output shows that the Pod status is PENDING. That is, the Pod is not scheduled to run on any Node, and it will remain in the PENDING state indefinitely: kubectl get pod memory-demo-3 --namespace=mem-example\nNAME            READY     STATUS    RESTARTS   AGE\nmemory-demo-3   0/1       Pending   0          25s View detailed information about the Pod, including events: kubectl describe pod memory-demo-3 --namespace = mem-"
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-11",
+    "text": "   0/1       Pending   0          25s View detailed information about the Pod, including events: kubectl describe pod memory-demo-3 --namespace = mem-example The output shows that the Container cannot be scheduled because of insufficient memory on the Nodes: Events:\n  ...  Reason            Message\n       ------            -------\n  ...  FailedScheduling  No nodes are available that match all of the following predicates:: Insufficient memory (3). Memory units The memory resource is measured in bytes. You can express memory as a plain integer or a\nfixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki.\nFor example, the following represent approximately the same value: 128974848, 129e6, 129M, 123Mi Delete your Pod: kubectl delete pod memory-demo-3 --namespace = mem-example If you do not specify a memory limit If you do not specify a memory limit for a Container, one of the following situations applies: The Container has no upper bound on the amount of me"
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-12",
+    "text": "it If you do not specify a memory limit for a Container, one of the following situations applies: The Container has no upper bound on the amount of memory it uses. The Container\ncould use all of the memory available on the Node where it is running which in turn could invoke the OOM Killer. Further, in case of an OOM Kill, a container with no resource limits will have a greater chance of being killed. The Container is running in a namespace that has a default memory limit, and the\nContainer is automatically assigned the default limit. Cluster administrators can use a LimitRange to specify a default value for the memory limit. Motivation for memory requests and limits By configuring memory requests and limits for the Containers that run in your\ncluster, you can make efficient use of the memory resources available on your cluster's\nNodes. By keeping a Pod's memory request low, you give the Pod a good chance of being\nscheduled. By having a memory limit that is greater than the memory reque"
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-13",
+    "text": " keeping a Pod's memory request low, you give the Pod a good chance of being\nscheduled. By having a memory limit that is greater than the memory request, you accomplish two things: The Pod can have bursts of activity where it makes use of memory that happens to be available. The amount of memory a Pod can use during a burst is limited to some reasonable amount. Clean up Delete your namespace. This deletes all the Pods that you created for this task: kubectl delete namespace mem-example What's next For app developers Assign CPU Resources to Containers and Pods Assign Pod-level CPU and memory resources Configure Quality of Service for Pods Resize CPU and Memory Resources assigned to Containers For cluster administrators Configure Default Memory Requests and Limits for a Namespace Configure Default CPU Requests and Limits for a Namespace Configure Minimum and Maximum Memory Constraints for a Namespace Configure Minimum and Maximum CPU Constraints for a Namespace Configure Memory and CPU Q"
+  },
+  {
+    "title": "Assign Memory Resources to Containers and Pods | Kubernetes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-2-chunk-14",
+    "text": "figure Minimum and Maximum Memory Constraints for a Namespace Configure Minimum and Maximum CPU Constraints for a Namespace Configure Memory and CPU Quotas for a Namespace Configure a Pod Quota for a Namespace Configure Quotas for API Objects Resize CPU and Memory Resources assigned to Containers Feedback Was this page helpful? Yes No Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on Stack Overflow .\nOpen an issue in the GitHub Repository if you want to report a problem or suggest an improvement . Last modified October 18, 2025 at 7:59 PM PST: fix typos in configure-pod-container (164bfbc27f)"
+  },
+  {
+    "title": "Images | Kubernetes",
     "url": "https://kubernetes.io/docs/concepts/containers/images/",
-    "origin": "seed_summary_not_full_source",
-    "text": "ImagePullBackOff may mean a wrong image tag, unavailable registry, credentials issue, or image pull restriction. Use pod events to identify the exact image retrieval failure."
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-1",
+    "text": "Images A container image represents binary data that encapsulates an application and all its\nsoftware dependencies. Container images are executable software bundles that can run\nstandalone and that make very well-defined assumptions about their runtime environment. You typically create a container image of your application and push it to a registry\nbefore referring to it in a Pod . This page provides an outline of the container image concept. Note: If you are looking for the container images for a Kubernetes\nrelease (such as v1.37, the latest minor release),\nvisit Download Kubernetes . Image names Container images are usually given a name such as pause , example/mycontainer , or kube-apiserver .\nImages can also include a registry hostname; for example: fictional.registry.example/imagename ,\nand possibly a port number as well; for example: fictional.registry.example:10443/imagename . If you don't specify a registry hostname, Kubernetes assumes that you mean the Docker public registry .\n"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-2",
+    "text": " fictional.registry.example:10443/imagename . If you don't specify a registry hostname, Kubernetes assumes that you mean the Docker public registry .\nYou can change this behavior by setting a default image registry in the container runtime configuration. After the image name part you can add a tag or digest (in the same way you would when using with commands\nlike docker or podman ). Tags let you identify different versions of the same series of images.\nDigests are a unique identifier for a specific version of an image. Digests are hashes of the image's content,\nand are immutable. Tags can be moved to point to different images, but digests are fixed. Image tags consist of lowercase and uppercase letters, digits, underscores ( _ ),\nperiods ( . ), and dashes ( - ). A tag can be up to 128 characters long, and must\nconform to the following regex pattern: [a-zA-Z0-9_][a-zA-Z0-9._-]{0,127} .\nYou can read more about it and find the validation regex in the OCI Distribution Specification .\nIf yo"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-3",
+    "text": "ex pattern: [a-zA-Z0-9_][a-zA-Z0-9._-]{0,127} .\nYou can read more about it and find the validation regex in the OCI Distribution Specification .\nIf you don't specify a tag, Kubernetes assumes you mean the tag latest . Image digests consists of a hash algorithm (such as sha256 ) and a hash value. For example: sha256:1ff6c18fbef2045af6b9c16bf034cc421a29027b800e4f9b68ae9b1cb3e9ae07 .\nYou can find more information about the digest format in the OCI Image Specification . Some image name examples that Kubernetes can use are: busybox — Image name only, no tag or digest. Kubernetes will use the Docker\npublic registry and latest tag. Equivalent to docker.io/library/busybox:latest . busybox:1.32.0 — Image name with tag. Kubernetes will use the Docker\npublic registry. Equivalent to docker.io/library/busybox:1.32.0 . registry.k8s.io/pause:latest — Image name with a custom registry and latest tag. registry.k8s.io/pause:3.5 — Image name with a custom registry and non-latest tag. registry.k8s.io/paus"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-4",
+    "text": "age name with a custom registry and latest tag. registry.k8s.io/pause:3.5 — Image name with a custom registry and non-latest tag. registry.k8s.io/pause@sha256:1ff6c18fbef2045af6b9c16bf034cc421a29027b800e4f9b68ae9b1cb3e9ae07 —\nImage name with digest. registry.k8s.io/pause:3.5@sha256:1ff6c18fbef2045af6b9c16bf034cc421a29027b800e4f9b68ae9b1cb3e9ae07 —\nImage name with tag and digest. Only the digest will be used for pulling. Updating images When you first create a Deployment , StatefulSet , Pod, or other\nobject that includes a PodTemplate, and a pull policy was not explicitly specified,\nthen by default the pull policy of all containers in that Pod will be set to IfNotPresent . This policy causes the kubelet to skip pulling an\nimage if it already exists. Image pull policy The imagePullPolicy for a container and the tag of the image both affect when the kubelet attempts to pull\n(download) the specified image. Here's a list of the values you can set for imagePullPolicy and the effects\nthese va"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-5",
+    "text": "when the kubelet attempts to pull\n(download) the specified image. Here's a list of the values you can set for imagePullPolicy and the effects\nthese values have: IfNotPresent the image is pulled only if it is not already present locally. Always every time the kubelet launches a container, the kubelet requests the container runtime to pull the image. The container runtime contacts the registry, resolves\nthe image tag or name to a digest ,\nand downloads any layers that are not already cached locally.\nIf all layers are already present, the container runtime uses the cached\nimage without downloading it again. The kubelet itself does not check\nwhether the image is cached locally; it always delegates to the container\nruntime. Never the kubelet does not try fetching the image. If the image is somehow already present\nlocally, the kubelet attempts to start the container; otherwise, startup fails.\nSee pre-pulled images for more details. The caching semantics of the container runtime make even ima"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-6",
+    "text": "to start the container; otherwise, startup fails.\nSee pre-pulled images for more details. The caching semantics of the container runtime make even imagePullPolicy: Always efficient, as long as the registry is reliably accessible.\nThe container runtime can notice that the image layers already exist on the node\nso that they don't need to be downloaded again. Note: You should avoid using the :latest tag when deploying containers in production as\nit is harder to track which version of the image is running and more difficult to\nroll back properly. Instead, specify a meaningful tag such as v1.42.0 and/or a digest. To make sure the Pod always uses the same version of a container image, you can specify\nthe image's digest;\nreplace <image-name>:<tag> with <image-name>@<digest> (for example, image@sha256:45b23dee08af5e43a7fea6c4cf9c25ccf269ee113168c19722f87876677c5cb2 ). When using image tags, if the image registry were to change the code that the tag on that image\nrepresents, you might end up wi"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-7",
+    "text": "19722f87876677c5cb2 ). When using image tags, if the image registry were to change the code that the tag on that image\nrepresents, you might end up with a mix of Pods running the old and new code. An image digest\nuniquely identifies a specific version of the image, so Kubernetes runs the same code every time\nit starts a container with that image name and digest specified. Specifying an image by digest\npins the code that you run so that a change at the registry cannot lead to that mix of versions. There are third-party admission controllers that mutate Pods (and PodTemplates) when they are created, so that the\nrunning workload is defined based on an image digest rather than a tag.\nThat might be useful if you want to make sure that your entire workload is\nrunning the same code no matter what tag changes happen at the registry. Default image pull policy When you (or a controller) submit a new Pod to the API server, your cluster sets the imagePullPolicy field when specific conditions are m"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-8",
+    "text": " pull policy When you (or a controller) submit a new Pod to the API server, your cluster sets the imagePullPolicy field when specific conditions are met: if you omit the imagePullPolicy field, and you specify the digest for the\ncontainer image, the imagePullPolicy is automatically set to IfNotPresent . if you omit the imagePullPolicy field, and the tag for the container image is :latest , imagePullPolicy is automatically set to Always . if you omit the imagePullPolicy field, and you don't specify the tag for the\ncontainer image, imagePullPolicy is automatically set to Always . if you omit the imagePullPolicy field, and you specify a tag for the container\nimage that isn't :latest , the imagePullPolicy is automatically set to IfNotPresent . Note: The value of imagePullPolicy of the container is always set when the object is\nfirst created , and is not updated if the image's tag or digest later changes. For example, if you create a Deployment with an image whose tag is not :latest , and la"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-9",
+    "text": "and is not updated if the image's tag or digest later changes. For example, if you create a Deployment with an image whose tag is not :latest , and later update that Deployment's image to a :latest tag, the imagePullPolicy field will not change to Always . You must manually change\nthe pull policy of any object after its initial creation. Required image pull If you would like to always force a pull, you can do one of the following: Set the imagePullPolicy of the container to Always . Omit the imagePullPolicy and use :latest as the tag for the image to use;\nKubernetes will set the policy to Always when you submit the Pod. Omit the imagePullPolicy and the tag for the image to use;\nKubernetes will set the policy to Always when you submit the Pod. Enable the AlwaysPullImages admission controller. ImagePullBackOff When a kubelet starts creating containers for a Pod using a container runtime,\nit might be possible the container is in Waiting state because of ImagePullBackOff . The status Image"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-10",
+    "text": " containers for a Pod using a container runtime,\nit might be possible the container is in Waiting state because of ImagePullBackOff . The status ImagePullBackOff means that a container could not start because Kubernetes\ncould not pull a container image (for reasons such as invalid image name, or pulling\nfrom a private registry without imagePullSecret ). The BackOff part indicates\nthat Kubernetes will keep trying to pull the image, with an increasing back-off delay. Kubernetes raises the delay between each attempt until it reaches a compiled-in limit,\nwhich is 300 seconds (5 minutes). Image pull per runtime class Feature state: Alpha since Kubernetes v1.29; disabled by default More information about this feature To use this feature, you (or a cluster administrator) will need to enable the RuntimeClassInImageCriApi feature gate for all relevant components in your cluster. See Enable Or Disable Feature Gates for more information. Kubernetes includes alpha support for performing image pull"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-11",
+    "text": "vant components in your cluster. See Enable Or Disable Feature Gates for more information. Kubernetes includes alpha support for performing image pulls based on the RuntimeClass of a Pod. If you enable the RuntimeClassInImageCriApi feature gate ,\nthe kubelet references container images by a tuple of image name and runtime handler\nrather than just the image name or digest. Your container runtime may adapt its behavior based on the selected runtime handler.\nPulling images based on runtime class is useful for VM-based containers, such as\nWindows Hyper-V containers. Serial and parallel image pulls By default, the kubelet pulls images serially. In other words, the kubelet sends\nonly one image pull request to the image service at a time. Other image pull\nrequests have to wait until the one being processed is complete. Nodes make image pull decisions in isolation. Even when you use serialized image\npulls, two different nodes can pull the same image in parallel. If you would like to enable par"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-12",
+    "text": "sions in isolation. Even when you use serialized image\npulls, two different nodes can pull the same image in parallel. If you would like to enable parallel image pulls, you can set the field serializeImagePulls to false in the kubelet configuration .\nWith serializeImagePulls set to false, image pull requests will be sent to the image service immediately,\nand multiple images will be pulled at the same time. When enabling parallel image pulls, ensure that the image service of your container\nruntime can handle parallel image pulls. The kubelet never pulls multiple images in parallel on behalf of one Pod. For example,\nif you have a Pod that has an init container and an application container, the image\npulls for the two containers will not be parallelized. However, if you have two\nPods that use different images, and the parallel image pull feature is enabled,\nthe kubelet will pull the images in parallel on behalf of the two different Pods. Maximum parallel image pulls Feature state: Stable "
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-13",
+    "text": "ture is enabled,\nthe kubelet will pull the images in parallel on behalf of the two different Pods. Maximum parallel image pulls Feature state: Stable since Kubernetes v1.35 When serializeImagePulls is set to false, the kubelet defaults to no limit on\nthe maximum number of images being pulled at the same time. If you would like to\nlimit the number of parallel image pulls, you can set the field maxParallelImagePulls in the kubelet configuration. With maxParallelImagePulls set to n , only n images can be pulled at the same time, and any image pull beyond n will have to\nwait until at least one ongoing image pull is complete. Limiting the number of parallel image pulls prevents image pulling from consuming\ntoo much network bandwidth or disk I/O, when parallel image pulling is enabled. You can set maxParallelImagePulls to a positive number that is greater than or\nequal to 1. If you set maxParallelImagePulls to be greater than or equal to 2,\nyou must set serializeImagePulls to false. The kube"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-14",
+    "text": " is greater than or\nequal to 1. If you set maxParallelImagePulls to be greater than or equal to 2,\nyou must set serializeImagePulls to false. The kubelet will fail to start\nwith an invalid maxParallelImagePulls setting. Multi-architecture images with image indexes As well as providing binary images, a container registry can also serve a container image index .\nAn image index can point to multiple image manifests for architecture-specific versions of a container. The idea is that you can have\na name for an image (for example: pause , example/mycontainer , kube-apiserver )\nand allow different systems to fetch the right binary image for the machine\narchitecture they are using. The Kubernetes project typically creates container images for its releases with\nnames that include the suffix -$(ARCH) . For backward compatibility, generate\nolder images with suffixes. For instance, an image named as pause would be a\nmulti-architecture image containing manifests for all supported architectures,\nwhi"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-15",
+    "text": "ges with suffixes. For instance, an image named as pause would be a\nmulti-architecture image containing manifests for all supported architectures,\nwhile pause-amd64 would be a backward-compatible version for older configurations,\nor for YAML files with hardcoded image names containing suffixes. Using a private registry Private registries may require authentication to be able to discover and/or pull\nimages from them.\nCredentials can be provided in several ways: Specifying imagePullSecrets when you define a Pod Only Pods which provide their own keys can access the private registry. Configuring Nodes to Authenticate to a Private Registry All Pods can read any configured private registries. Requires node configuration by cluster administrator. Using a kubelet credential provider plugin to dynamically fetch credentials for private registries The kubelet can be configured to use credential provider exec plugin for the\nrespective private registry. Pre-pulled Images All Pods can use any images"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-16",
+    "text": "he kubelet can be configured to use credential provider exec plugin for the\nrespective private registry. Pre-pulled Images All Pods can use any images cached on a node. Requires root access to all nodes to set up. Vendor-specific or local extensions If you're using a custom node configuration, you (or your cloud provider) can\nimplement your mechanism for authenticating the node to the container registry. These options are explained in more detail below. Specifying imagePullSecrets on a Pod Note: This is the recommended approach to run containers based on images\nin private registries. Kubernetes supports specifying container image registry keys on a Pod.\nAll imagePullSecrets must be Secrets that exist in the same Namespace as the\nPod. These Secrets must be of type kubernetes.io/dockercfg or kubernetes.io/dockerconfigjson . Configuring nodes to authenticate to a private registry Specific instructions for setting credentials depends on the container runtime and registry you\nchose to use. "
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-17",
+    "text": "s to authenticate to a private registry Specific instructions for setting credentials depends on the container runtime and registry you\nchose to use. You should refer to your solution's documentation for the most accurate information. For an example of configuring a private container image registry, see the Pull an Image from a Private Registry task. That example uses a private registry in Docker Hub. Kubelet credential provider for authenticated image pulls You can configure the kubelet to invoke a plugin binary to dynamically fetch\nregistry credentials for a container image. This is the most robust and versatile\nway to fetch credentials for private registries, but also requires kubelet-level\nconfiguration to enable. This technique can be especially useful for running static Pods that require container images hosted in a private registry.\nUsing a ServiceAccount or a Secret to provide private registry credentials\nis not possible in the specification of a static Pod, because it cannot h"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-18",
+    "text": ".\nUsing a ServiceAccount or a Secret to provide private registry credentials\nis not possible in the specification of a static Pod, because it cannot have references to other API resources in its specification. See Configure a kubelet image credential provider for more details. Interpretation of config.json The interpretation of config.json varies between the original Docker\nimplementation and the Kubernetes interpretation. In Docker, the auths keys\ncan only specify root URLs, whereas Kubernetes allows glob URLs as well as\nprefix-matched paths. The only limitation is that glob patterns ( * ) have to\ninclude the dot ( . ) for each subdomain. The amount of matched subdomains has\nto be equal to the amount of glob patterns ( *. ), for example: *.kubernetes.io will not match kubernetes.io , but will match abc.kubernetes.io . *.*.kubernetes.io will not match abc.kubernetes.io , but will match abc.def.kubernetes.io . prefix.*.io will match prefix.kubernetes.io . *-good.kubernetes.io will match"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-19",
+    "text": "ill not match abc.kubernetes.io , but will match abc.def.kubernetes.io . prefix.*.io will match prefix.kubernetes.io . *-good.kubernetes.io will match prefix-good.kubernetes.io . This means that a config.json like this is valid: { \"auths\" : { \"my-registry.example/images\" : { \"auth\" : \"…\" }, \"*.my-registry.example/images\" : { \"auth\" : \"…\" } } } Image pull operations pass the credentials to the CRI container runtime for every\nvalid pattern. For example, the following container image names would match\nsuccessfully: my-registry.example/images my-registry.example/images/my-image my-registry.example/images/another-image sub.my-registry.example/images/my-image However, these container image names would not match: a.sub.my-registry.example/images/my-image a.b.sub.my-registry.example/images/my-image The kubelet performs image pulls sequentially for every found credential. This\nmeans that multiple entries in config.json for different paths are possible, too: { \"auths\" : { \"my-registry.example/im"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-20",
+    "text": "r every found credential. This\nmeans that multiple entries in config.json for different paths are possible, too: { \"auths\" : { \"my-registry.example/images\" : { \"auth\" : \"…\" }, \"my-registry.example/images/subpath\" : { \"auth\" : \"…\" } } } If now a container specifies an image my-registry.example/images/subpath/my-image to be pulled, then the kubelet will try to download it using both authentication\nsources if one of them fails. Pre-pulled images Note: This approach is suitable if you can control node configuration. It\nwill not work reliably if your cloud provider manages nodes and replaces\nthem automatically. By default, the kubelet tries to pull each image from the specified registry.\nHowever, if the imagePullPolicy property of the container is set to IfNotPresent or Never ,\nthen a local image is used (preferentially or exclusively, respectively). If you want to rely on pre-pulled images as a substitute for registry authentication,\nyou must ensure all nodes in the cluster have the same p"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-21",
+    "text": "ively). If you want to rely on pre-pulled images as a substitute for registry authentication,\nyou must ensure all nodes in the cluster have the same pre-pulled images. This can be used to preload certain images for speed or as an alternative to\nauthenticating to a private registry. Similar to the usage of the kubelet credential provider ,\npre-pulled images are also suitable for launching static Pods that depend\non images hosted in a private registry. Note: Feature state: Beta since Kubernetes v1.35; enabled by default Access to pre-pulled images may be authorized according to image pull credential verification . Ensure image pull credential verification Feature state: Beta since Kubernetes v1.35; enabled by default If the KubeletEnsureSecretPulledImages feature gate is enabled for your cluster,\nKubernetes will validate image credentials for every image that requires credentials\nto be pulled, even if that image is already present on the node. This validation\nensures that images in a Pod"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-22",
+    "text": "or every image that requires credentials\nto be pulled, even if that image is already present on the node. This validation\nensures that images in a Pod request which have not been successfully pulled\nwith the provided credentials must re-pull the images from the registry.\nAdditionally, image pulls that re-use the same credentials\nwhich previously resulted in a successful image pull will not need to re-pull from\nthe registry and are instead validated locally without accessing the registry\n(provided the image is available locally).\nThis is controlled by the imagePullCredentialsVerificationPolicy field in the Kubelet configuration . This configuration controls when image pull credentials must be verified if the\nimage is already present on the node: NeverVerify : Mimics the behavior of having this feature gate disabled.\nIf the image is present locally, image pull credentials are not verified. NeverVerifyPreloadedImages : Images pulled outside the kubelet are not verified,\nbut all other imag"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-23",
+    "text": " locally, image pull credentials are not verified. NeverVerifyPreloadedImages : Images pulled outside the kubelet are not verified,\nbut all other images will have their credentials verified. This is the default behavior. NeverVerifyAllowListedImages : Images pulled outside the kubelet and mentioned within the preloadedImagesVerificationAllowlist specified in the kubelet config are not verified. AlwaysVerify : All images will have their credentials verified\nbefore they can be used. This verification applies to pre-pulled images ,\nimages pulled using node-wide secrets, and images pulled using Pod-level secrets. Note: In the case of credential rotation, the credentials previously used to pull the image\nwill continue to verify without the need to access the registry. New or rotated credentials\nwill require the image to be re-pulled from the registry. Enabling KubeletEnsureSecretPulledImages for the first time When the KubeletEnsureSecretPulledImages gets enabled for the first time, either\n"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-24",
+    "text": "egistry. Enabling KubeletEnsureSecretPulledImages for the first time When the KubeletEnsureSecretPulledImages gets enabled for the first time, either\nby a kubelet upgrade or by explicitly enabling the feature, if a kubelet is able to\naccess any images at that time, these will all be considered pre-pulled. This happens\nbecause in this case the kubelet has no records about the images being pulled.\nThe kubelet will only be able to start making image pull records as any image gets\npulled for the first time. If this is a concern, it is advised to clean up nodes of all images that should not\nbe considered pre-pulled before enabling the feature. Note that removing the directory holding the image pulled records will have the same\neffect on kubelet restart, particularly the images currently cached in the nodes by\nthe container runtime will all be considered pre-pulled. Creating a Secret with a Docker config You need to know the username, registry password and client email address for authentica"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-25",
+    "text": "considered pre-pulled. Creating a Secret with a Docker config You need to know the username, registry password and client email address for authenticating\nto the registry, as well as its hostname.\nRun the following command, substituting placeholders with the appropriate values: kubectl create secret docker-registry <name> \\ --docker-server = <docker-registry-server> \\ --docker-username = <docker-user> \\ --docker-password = <docker-password> \\ --docker-email = <docker-email> If you already have a Docker credentials file then, rather than using the above\ncommand, you can import the credentials file as a Kubernetes Secret . Create a Secret based on existing Docker credentials explains how to set this up. This is particularly useful if you are using multiple private container\nregistries, as kubectl create secret docker-registry creates a Secret that\nonly works with a single private registry. Note: Pods can only reference image pull secrets in their own namespace,\nso this process needs to b"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-26",
+    "text": "et that\nonly works with a single private registry. Note: Pods can only reference image pull secrets in their own namespace,\nso this process needs to be done one time per namespace. Referring to imagePullSecrets on a Pod Now, you can create pods which reference that secret by adding the imagePullSecrets section to a Pod definition. Each item in the imagePullSecrets array can only\nreference one Secret in the same namespace. For example: cat <<EOF > pod.yaml apiVersion: v1 kind: Pod metadata: name: foo namespace: awesomeapps spec: containers: - name: foo image: janedoe/awesomeapp:v1 imagePullSecrets: - name: myregistrykey EOF cat <<EOF >> ./kustomization.yaml resources: - pod.yaml EOF This needs to be done for each Pod that is using a private registry. However, you can automate this process by specifying the imagePullSecrets section\nin a ServiceAccount resource. See Add ImagePullSecrets to a Service Account for detailed instructions. You can use this in conjunction with a per-node .docker"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-27",
+    "text": "viceAccount resource. See Add ImagePullSecrets to a Service Account for detailed instructions. You can use this in conjunction with a per-node .docker/config.json . The credentials\nwill be merged. Use cases There are a number of solutions for configuring private registries. Here are some\ncommon use cases and suggested solutions. Cluster running only non-proprietary (e.g. open-source) images. No need to hide images. Use public images from a public registry No configuration required. Some cloud providers automatically cache or mirror public images, which improves\navailability and reduces the time to pull images. Cluster running some proprietary images which should be hidden to those outside the company, but\nvisible to all cluster users. Use a hosted private registry Manual configuration may be required on the nodes that need to access to private registry. Or, run an internal private registry behind your firewall with open read access. No Kubernetes configuration is required. Use a hosted"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-28",
+    "text": "ivate registry. Or, run an internal private registry behind your firewall with open read access. No Kubernetes configuration is required. Use a hosted container image registry service that controls image access It will work better with Node autoscaling than manual node configuration. Or, on a cluster where changing the node configuration is inconvenient, use imagePullSecrets . Cluster with proprietary images, a few of which require stricter access control. Ensure AlwaysPullImages admission controller is active. Otherwise, all Pods potentially have access to all images. Move sensitive data into a Secret resource, instead of packaging it in an image. A multi-tenant cluster where each tenant needs own private registry. Ensure AlwaysPullImages admission controller is active. Otherwise, all Pods of all tenants potentially have access to all images. Run a private registry with authorization required. Generate registry credentials for each tenant, store into a Secret, and propagate\nthe Secret"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-29",
+    "text": "ages. Run a private registry with authorization required. Generate registry credentials for each tenant, store into a Secret, and propagate\nthe Secret to every tenant namespace. The tenant then adds that Secret to imagePullSecrets of each namespace. If you need access to multiple registries, you can create one Secret per registry. Legacy built-in kubelet credential provider In older versions of Kubernetes, the kubelet had a direct integration with cloud\nprovider credentials. This provided the ability to dynamically fetch credentials\nfor image registries. There were three built-in implementations of the kubelet credential provider\nintegration: ACR (Azure Container Registry), ECR (Elastic Container Registry),\nand GCR (Google Container Registry). Starting with version 1.26 of Kubernetes, the legacy mechanism has been removed,\nso you would need to either: configure a kubelet image credential provider on each node; or specify image pull credentials using imagePullSecrets and at least one Se"
+  },
+  {
+    "title": "Images | Kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/containers/images/",
+    "retrieved_at": "2026-10-18T14:03:39.821050+00:00",
+    "chunk_id": "page-3-chunk-30",
+    "text": "ed to either: configure a kubelet image credential provider on each node; or specify image pull credentials using imagePullSecrets and at least one Secret. What's next Read the OCI Image Manifest Specification . Learn about container image garbage collection . Learn more about pulling an Image from a Private Registry . Feedback Was this page helpful? Yes No Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on Stack Overflow .\nOpen an issue in the GitHub Repository if you want to report a problem or suggest an improvement . Last modified February 14, 2026 at 4:19 PM PST: Fix misleading imagePullPolicy: Always description (3136f09689)"
   }
 ]
